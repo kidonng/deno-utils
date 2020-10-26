@@ -1,5 +1,6 @@
 import { ky } from './deps.ts'
 
+// TODO: incomplete type
 export interface Gist {
   files: Record<string, GistFile>
   [key: string]: any
@@ -25,36 +26,30 @@ export interface UpdateGistOptions {
  * Getting and updating GitHub gists.
  *
  * ```ts
- * import { gist } from 'https://cdn.jsdelivr.net/gh/kidonng/deno-utils/mod.ts'
+ * import { GistAPI } from 'https://cdn.jsdelivr.net/gh/kidonng/deno-utils/mod.ts'
  *
- * const { getGist } = gist(GITHUB_TOKEN)
- * const { files } = await getGist('12345678')
+ * const { get } = new GistAPI(token)
+ * const { files } = await get('12345678')
  * ```
  */
-export function gist(
-  token: string
-): {
-  getGist(id: string): Promise<Gist>
-  updateGist(options: UpdateGistOptions): Promise<any>
-} {
-  const api = ky.extend({
-    prefixUrl: 'https://api.github.com/',
-    headers: {
-      authorization: `token ${token}`,
-    },
-  })
+export class GistAPI {
+  #api: typeof ky
 
-  const getGist = (id: string): Promise<Gist> => api.get(`gists/${id}`).json()
-  const updateGist = ({
-    id,
-    description,
-    files,
-  }: UpdateGistOptions): Promise<any> =>
-    api
+  constructor(token: string) {
+    this.#api = ky.extend({
+      prefixUrl: 'https://api.github.com/',
+      headers: {
+        authorization: `token ${token}`,
+      },
+    })
+  }
+
+  get = (id: string): Promise<Gist> => this.#api.get(`gists/${id}`).json()
+
+  update = ({ id, description, files }: UpdateGistOptions): Promise<any> =>
+    this.#api
       .patch(`gists/${id}`, {
         json: { description, files },
       })
       .json()
-
-  return { getGist, updateGist }
 }

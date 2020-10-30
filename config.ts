@@ -14,9 +14,10 @@ export class Config<T extends Object> extends SubProxy<T> {
     this.path = path
 
     if (autoSave)
-      this.subscribe(subscribeAll, ({ type }) => {
+      this.subscribe(subscribeAll, ({ type, value, newValue }) => {
         switch (type) {
           case 'set':
+            if (Object.is(value, newValue)) break
           case 'delete':
             this.save()
         }

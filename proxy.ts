@@ -31,7 +31,7 @@ export function proxy<T extends Object>(
           }
       }
 
-      if (value && typeof value === 'object') return proxy(value, subscribers)
+      if (typeof value === 'object') return proxy(value, subscribers)
       return value
     },
     set(target, key, newValue, receiver) {

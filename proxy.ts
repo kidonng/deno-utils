@@ -1,9 +1,23 @@
-export interface Operation {
-  type: 'get' | 'set' | 'delete'
+interface BaseOperation {
   key: PropertyKey
-  value: unknown
-  newValue?: unknown
 }
+
+export interface GetOperation extends BaseOperation {
+  type: 'get'
+  value: unknown
+}
+
+export interface SetOperation extends BaseOperation {
+  type: 'set'
+  value: unknown
+  newValue: unknown
+}
+
+export interface DeleteOperation extends BaseOperation {
+  type: 'delete'
+}
+
+export type Operation = GetOperation | SetOperation | DeleteOperation
 export type Subscriber = (operation: Operation) => void
 export type Subscribers = Map<unknown, Set<Subscriber>>
 
@@ -54,10 +68,9 @@ export function proxy<T extends Object>(
             }
         }
 
-      return status
+      return newValue
     },
     deleteProperty(target, key) {
-      const value = Reflect.get(target, key)
       const status = Reflect.deleteProperty(target, key)
 
       if (status)
@@ -70,7 +83,6 @@ export function proxy<T extends Object>(
               subscriber({
                 type: 'delete',
                 key,
-                value,
               })
             }
         }

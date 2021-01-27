@@ -4,20 +4,23 @@ import { parseJSON } from './json.ts'
 
 export class Config<T extends Object> extends SubProxy<T> {
   path: string
+  #dir: string
 
   constructor(path: string, autoSave: boolean = true) {
     super(
-      (existsSync(path)
-        ? parseJSON(Deno.readTextFileSync(path), () => Deno.removeSync(path))
-        : {}) as T
+      parseJSON(existsSync(path) ? Deno.readTextFileSync(path) : '{}', () => {
+        Deno.removeSync(path)
+        return {}
+      }) as T
     )
     this.path = path
+    this.#dir = dirname(path)
 
     if (autoSave)
-      this.subscribe(subscribeAll, ({ type, value, newValue }) => {
-        switch (type) {
+      this.subscribe(subscribeAll, (operation) => {
+        switch (operation.type) {
           case 'set':
-            if (Object.is(value, newValue)) break
+            if (Object.is(operation.value, operation.newValue)) break
           case 'delete':
             this.save()
         }
@@ -25,12 +28,7 @@ export class Config<T extends Object> extends SubProxy<T> {
   }
 
   save = () => {
-    ensureDirSync(dirname(this.path))
+    ensureDirSync(this.#dir)
     Deno.writeTextFileSync(this.path, JSON.stringify(this.data))
-  }
-
-  reset = () => {
-    this.data = {} as T
-    this.save()
   }
 }

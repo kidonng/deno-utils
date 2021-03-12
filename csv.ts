@@ -54,31 +54,25 @@ export function CSVToTable(
   while (index < source.length) {
     const token = source[index]
 
-    switch (true) {
-      case token === colSeparator:
-        if (quote) pushToken(token)
-        else pushField()
-        break
-      case rowSeparator.includes(token):
-        if (quote) pushToken(token)
-        else {
-          if (token === rowSeparator[rowSeparator.length - 1]) {
-            pushField()
-            if (index !== source.length - 1) rows.push([])
-          }
+    if (token === colSeparator) {
+      if (quote) pushToken(token)
+      else pushField()
+    } else if (rowSeparator.includes(token)) {
+      if (quote) pushToken(token)
+      else {
+        if (token === rowSeparator[rowSeparator.length - 1]) {
+          pushField()
+          if (index !== source.length - 1) rows.push([])
         }
-        break
-      case token === '"':
-        if (quote) {
-          if (source[index + 1] === '"') {
-            pushToken(token)
-            index++
-          } else quote = false
-        } else quote = true
-        break
-      default:
-        pushToken(token)
-    }
+      }
+    } else if (token === '"') {
+      if (quote) {
+        if (source[index + 1] === '"') {
+          pushToken(token)
+          index++
+        } else quote = false
+      } else quote = true
+    } else pushToken(token)
 
     index++
   }

@@ -28,7 +28,7 @@ export class GraphQL {
     })
   }
 
-  graphql = async <T = any>(query: string): Promise<T> => {
+  graphql = async <T = unknown>(query: string): Promise<T> => {
     if (!query.match(/^(\s+)?query/)) query = `query {${query}}`
     const { data } = await this.#api
       .post('graphql', {

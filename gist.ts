@@ -3,7 +3,7 @@ import { ky } from './deps.ts'
 // TODO: incomplete type
 export interface Gist {
   files: Record<string, GistFile>
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface GistFile {
@@ -46,7 +46,7 @@ export class GistAPI {
 
   get = (id: string): Promise<Gist> => this.#api.get(`gists/${id}`).json()
 
-  update = ({ id, description, files }: UpdateGistOptions): Promise<any> =>
+  update = ({ id, description, files }: UpdateGistOptions): Promise<unknown> =>
     this.#api
       .patch(`gists/${id}`, {
         json: { description, files },
